@@ -1,5 +1,8 @@
 # docker-unoserver
 
+[![Dockerfile Lint](https://github.com/Fufuhu/docker-unoserver/actions/workflows/dockerfile-lint.yml/badge.svg)](https://github.com/Fufuhu/docker-unoserver/actions/workflows/dockerfile-lint.yml)
+[![Vulnerability Scan](https://github.com/Fufuhu/docker-unoserver/actions/workflows/vulnerability-scan.yml/badge.svg)](https://github.com/Fufuhu/docker-unoserver/actions/workflows/vulnerability-scan.yml)
+
 [unoserver](https://github.com/unoconv/unoserver) の Docker 構成です。
 LibreOffice ベースの HTTP サーバーで、DOCX・XLSX・PPTX などのドキュメントを PDF 等の形式に変換します。
 
