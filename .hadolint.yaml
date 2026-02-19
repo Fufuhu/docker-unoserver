@@ -9,3 +9,7 @@ ignore:
   # DL3008: apt-get install でのバージョン固定
   # → Debian パッケージは apt upgrade で最新パッチを取得する方針のため固定しない
   - DL3008
+
+  # DL3013: pip install でのバージョン固定
+  # → unoserver は常に最新版を使用する方針のため固定しない
+  - DL3013
