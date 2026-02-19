@@ -1,0 +1,10 @@
+# Debian が修正対象外（will_not_fix）と判断した CVE
+# https://security-tracker.debian.org/tracker/SOURCE/zlib
+
+# zlib1g: MiniZip における整数オーバーフロー
+# unoserver はMiniZip API を直接使用しないため影響なし
+CVE-2023-45853
+
+# libtiff6: TIFFRasterScanlineSize64 の過大サイズ算出
+# unoserver は libtiff を直接使用しないため影響なし
+CVE-2023-52355

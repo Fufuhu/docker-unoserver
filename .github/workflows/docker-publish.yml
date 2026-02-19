@@ -8,7 +8,61 @@ on:
       - "v*"
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: fufuhu
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build image for testing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: fufuhu/unoserver:test-${{ github.sha }}
+          cache-from: type=registry,ref=fufuhu/unoserver:buildcache
+
+      - name: Start unoserver container
+        run: docker run -d --name unoserver -p 2003:2003 fufuhu/unoserver:test-${{ github.sha }}
+
+      - name: Wait for unoserver to be ready
+        run: |
+          for i in $(seq 1 36); do
+            if python3 -c "import xmlrpc.client; xmlrpc.client.ServerProxy('http://localhost:2003').info()" 2>/dev/null; then
+              echo "unoserver is ready"
+              exit 0
+            fi
+            echo "Waiting... (attempt $i/36)"
+            sleep 5
+          done
+          echo "Timed out waiting for unoserver"
+          docker logs unoserver
+          exit 1
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run tests
+        run: uv run pytest tests/ -v
+
+      - name: Stop container
+        if: always()
+        run: docker stop unoserver && docker rm unoserver
+
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,5 +97,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=fufuhu/unoserver:buildcache
+          cache-to: type=registry,ref=fufuhu/unoserver:buildcache,mode=max
