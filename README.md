@@ -56,6 +56,19 @@ curl で直接 HTTP リクエストを送ることも可能です。
 curl --form "file=@input.docx" http://localhost:2003/request?convert-to=pdf -o output.pdf
 ```
 
+## テスト
+
+サーバーが起動している状態で以下を実行します。
+
+```bash
+docker compose up -d
+
+uv run pytest tests/
+```
+
+`uv run` は初回実行時に依存パッケージを自動でインストールします。
+サーバーが起動していない場合はテストはスキップされます。
+
 ## ポート
 
 | ポート | 用途 |
