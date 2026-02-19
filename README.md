@@ -11,7 +11,38 @@ LibreOffice ベースの HTTP サーバーで、DOCX・XLSX・PPTX などのド�
 - Docker
 - Docker Compose
 
-## 使い方
+## Docker Hub イメージの利用
+
+ビルド済みイメージを [Docker Hub](https://hub.docker.com/r/fufuhu/unoserver) から取得して使用できます。
+
+### タグ
+
+| タグ | 説明 |
+|------|------|
+| `latest` | `main` ブランチの最新ビルド |
+| `1.2.3` | 特定バージョン（例: `v1.2.3` タグ時に発行） |
+| `1.2` | メジャー.マイナーバージョン |
+
+### docker run
+
+```bash
+docker run -d -p 2003:2003 fufuhu/unoserver:latest
+```
+
+### docker compose（ビルドなし）
+
+`docker-compose.yml` の `build: .` を `image:` に置き換えることでローカルビルドを省略できます。
+
+```yaml
+services:
+  unoserver:
+    image: fufuhu/unoserver:latest
+    ports:
+      - "2003:2003"
+    restart: unless-stopped
+```
+
+## ソースからのビルドと利用
 
 ### 起動
 
