@@ -21,7 +21,7 @@ RUN apt-get update \
         fonts-liberation \
         fonts-noto-cjk \
         tini \
-    && pip3 install --break-system-packages unoserver \
+    && pip3 install --no-cache-dir --break-system-packages unoserver \
     && apt-get purge -y python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
