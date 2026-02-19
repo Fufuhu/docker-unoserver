@@ -1,0 +1,6 @@
+services:
+  unoserver:
+    build: .
+    ports:
+      - "2003:2003"
+    restart: unless-stopped
