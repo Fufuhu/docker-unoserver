@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice-draw \
     python3 \
     python3-pip \
+    python3-uno \
     fonts-liberation \
     fonts-noto-cjk \
     && apt-get clean \
