@@ -37,18 +37,18 @@ jobs:
       - name: Start unoserver container
         run: docker run -d --name unoserver -p 2003:2003 fufuhu/unoserver:test-${{ github.sha }}
 
-      - name: Wait for unoserver to be healthy
+      - name: Wait for unoserver to be ready
         run: |
-          for i in $(seq 1 24); do
-            status=$(docker inspect --format='{{.State.Health.Status}}' unoserver 2>/dev/null)
-            if [ "$status" = "healthy" ]; then
+          for i in $(seq 1 36); do
+            if python3 -c "import xmlrpc.client; xmlrpc.client.ServerProxy('http://localhost:2003').info()" 2>/dev/null; then
               echo "unoserver is ready"
               exit 0
             fi
-            echo "Waiting... (attempt $i/24, status: $status)"
+            echo "Waiting... (attempt $i/36)"
             sleep 5
           done
           echo "Timed out waiting for unoserver"
+          docker logs unoserver
           exit 1
 
       - name: Set up uv
