@@ -1,0 +1,15 @@
+# Hadolint 設定ファイル
+# ルール一覧: https://github.com/hadolint/hadolint/wiki
+
+ignore:
+  # DL3005: apt-get upgrade の使用禁止
+  # → セキュリティパッチを常に最新化するために意図的に使用している
+  - DL3005
+
+  # DL3008: apt-get install でのバージョン固定
+  # → Debian パッケージは apt upgrade で最新パッチを取得する方針のため固定しない
+  - DL3008
+
+  # DL3013: pip install でのバージョン固定
+  # → unoserver は常に最新版を使用する方針のため固定しない
+  - DL3013
