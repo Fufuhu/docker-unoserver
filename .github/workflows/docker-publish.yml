@@ -65,7 +65,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write  # GitHub Dependency Submission API への送信に必要
 
     steps:
       - name: Checkout
@@ -91,6 +91,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -99,3 +100,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=fufuhu/unoserver:buildcache
           cache-to: type=registry,ref=fufuhu/unoserver:buildcache,mode=max
+          sbom: true       # SPDX 形式の SBOM を OCI Attestation として Docker Hub に付加
+          provenance: true # SLSA Provenance を OCI Attestation として Docker Hub に付加
+
+      - name: Generate SBOM and submit to GitHub Dependency Graph
+        uses: anchore/sbom-action@v0
+        with:
+          image: fufuhu/unoserver@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          dependency-snapshot: true  # リポジトリの Dependency Graph に送信
