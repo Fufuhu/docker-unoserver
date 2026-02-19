@@ -18,4 +18,7 @@ RUN pip3 install --break-system-packages unoserver
 
 EXPOSE 2003
 
+HEALTHCHECK --interval=10s --timeout=10s --start-period=60s --retries=6 \
+    CMD python3 -c "import xmlrpc.client; xmlrpc.client.ServerProxy('http://localhost:2003').info()"
+
 CMD ["python3", "-m", "unoserver.server", "--interface", "0.0.0.0"]
