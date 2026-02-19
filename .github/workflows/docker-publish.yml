@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - name: Checkout
@@ -26,13 +28,19 @@ jobs:
           username: fufuhu
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build image for testing
+      # テスト用イメージをビルドして Docker Hub に push する。
+      # build-and-push ジョブではこのイメージを再利用するため二重ビルドが不要になる。
+      - name: Build and push test image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
-          load: true
+          push: true
           tags: fufuhu/unoserver:test-${{ github.sha }}
           cache-from: type=registry,ref=fufuhu/unoserver:buildcache
+          cache-to: type=registry,ref=fufuhu/unoserver:buildcache,mode=max
+          sbom: true
+          provenance: true
 
       - name: Start unoserver container
         run: docker run -d --name unoserver -p 2003:2003 fufuhu/unoserver:test-${{ github.sha }}
@@ -90,22 +98,21 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Build and push
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=fufuhu/unoserver:buildcache
-          cache-to: type=registry,ref=fufuhu/unoserver:buildcache,mode=max
-          sbom: true       # SPDX 形式の SBOM を OCI Attestation として Docker Hub に付加
-          provenance: true # SLSA Provenance を OCI Attestation として Docker Hub に付加
+      # ビルドは行わず、テスト済みイメージをレジストリ上で本番タグに複製する。
+      # SBOM / Provenance Attestation は test ジョブで付与済みのため引き継がれる。
+      - name: Retag image for production
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          echo "$TAGS" | while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            docker buildx imagetools create --tag "$tag" \
+              "fufuhu/unoserver:test-${{ github.sha }}"
+          done
 
       - name: Generate SBOM and submit to GitHub Dependency Graph
         uses: anchore/sbom-action@v0
         with:
-          image: fufuhu/unoserver@${{ steps.build.outputs.digest }}
+          image: fufuhu/unoserver@${{ needs.test.outputs.image-digest }}
           format: spdx-json
-          dependency-snapshot: true  # リポジトリの Dependency Graph に送信
+          dependency-snapshot: true
